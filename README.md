@@ -1,22 +1,20 @@
 # bluetoothGameControllerESP32
 Make a bluetooth (ble  >bt4.2) connection with your own buttons, rotary encoders, and/or potentiometers
 
-Features:
----
-* Button press (32 buttons)
-* Button release (32 buttons)
-* Axes movement (6 axes (x, y, z, rZ, rX, rY) --> (Left Thumb X, Left Thumb Y, Right Thumb X, Right Thumb Y, Left Trigger, Right Trigger)))
-* Point of view hat (d-pad)
-* Report optional battery level to host (basically works, but it doesn't show up in Android's status bar)
-* Customize Bluetooth device name/manufacturer
-* Compatible with Windows
-* Compatible with Android
-* Compatible with Linux
-* Compatible with MacOS X
+## Features
+ - [x] Button press (32 buttons)
+ - [x] Button release (32 buttons)
+ - [x] Axes movement (6 axes (x, y, z, rZ, rX, rY) --> (Left Thumb X, Left Thumb Y, Right Thumb X, Right Thumb Y, Left Trigger, Right Trigger)))
+ - [x] Point of view hat (d-pad)
+ - [x] Report optional battery level to host (basically works, but it doesn't show up in Android's status bar)
+ - [x] Customize Bluetooth device name/manufacturer
+ - [x] Compatible with Windows
+ - [x] Compatible with Android
+ - [x] Compatible with Linux
+ - [x] Compatible with MacOS X
+ - [ ] Compatible with iOS (No - not even for accessibility switch - This is not a “Made for iPhone” (MFI) compatible device)
 
-
-Credits
----
+## Credits
 Credits to lemmingDev as this software is based on this repoistory. (https://github.com/lemmingDev/ESP32-BLE-Gamepad) 
 
 Credits to T-vK as this library is based on his ESP32-BLE-Mouse library (https://github.com/T-vK/ESP32-BLE-Mouse) that he provided.
