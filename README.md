@@ -1,5 +1,5 @@
 # bluetoothGameControllerESP32
-Make a bluetooth (ble  >bt4.2) connection with your own buttons, rotary encoders, and/or potentiometers
+Make a bluetooth (ble  >bt4.2) connection with your own buttons, rotary encoders, and/or potentiometers. You can use this for you Simracing or Flight simulator rig.
 
 ## Features
  - [x] Button press (32 buttons)
