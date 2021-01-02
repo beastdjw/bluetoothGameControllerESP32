@@ -20,4 +20,4 @@ Credits to lemmingDev as this software is based on this repoistory. (https://git
 Credits to T-vK as this library is based on his ESP32-BLE-Mouse library (https://github.com/T-vK/ESP32-BLE-Mouse) that he provided.
 
 Credits to chegewara as the ESP32-BLE-Mouse library is based on this piece of code that he provided.
-##
+
