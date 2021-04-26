@@ -2,10 +2,10 @@
 Make a bluetooth (ble  >bt4.2) connection with your own buttons, rotary encoders, and/or potentiometers. You can use this for you Simracing or Flight simulator rig.
 
 ## Features
- - [x] Button press (32 buttons)
- - [x] Button release (32 buttons)
- - [x] Axes movement (6 axes (x, y, z, rZ, rX, rY) --> (Left Thumb X, Left Thumb Y, Right Thumb X, Right Thumb Y, Left Trigger, Right Trigger)))
- - [x] Point of view hat (d-pad)
+ - [x] Button press (25 buttons)
+ - [x] Button release (25 buttons)
+ - [] Axes movement (0 axes (x, y, z, rZ, rX, rY) --> (Left Thumb X, Left Thumb Y, Right Thumb X, Right Thumb Y, Left Trigger, Right Trigger)))
+ - [] Point of view hat (d-pad)
  - [x] Report optional battery level to host (basically works, but it doesn't show up in Android's status bar)
  - [x] Customize Bluetooth device name/manufacturer
  - [x] Compatible with Windows
