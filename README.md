@@ -24,3 +24,4 @@ Credits to chegewara as the ESP32-BLE-Mouse library is based on this piece of co
 ## Electronics
 All GPIO's uses internal (in the code) and external (gpio 36, 39, 27, 35) pullup restistors(i.e. 10kOhm)
 The external and internal Led is connected on GPIO2, this shows if Bluetooth is connected. This pin is always used as input for a button, this works and is as designed.
+This software has been tested succesful on ESP32 Wroom 32.
