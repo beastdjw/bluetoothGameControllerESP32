@@ -32,6 +32,7 @@ class RotaryKnob
     void setSendingPressButton(boolean);
     boolean isReleaseNeeded();
     void setReleaseNeeded(boolean);
+    void releaseDone();
     void ISR();
     int counter = 0;
    
