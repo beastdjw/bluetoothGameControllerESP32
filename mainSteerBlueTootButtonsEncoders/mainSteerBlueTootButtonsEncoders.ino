@@ -204,7 +204,7 @@ void scanRotaryEncoders() {
             bleGamepad.release(bleRotaryKnobPins[i*2]);
             bleGamepad.release(bleRotaryKnobPins[i*2+1]);
             rotaryKnobs[i].setSendingPressButton(false);
-            rotaryKnobs[i].setReleaseNeeded(false);
+            rotaryKnobs[i].releaseDone();
          }
       }
       else if (rotaryKnobs[i].changed()) {

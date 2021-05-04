@@ -42,6 +42,10 @@ void RotaryKnob::setReleaseNeeded(boolean set) {
   releaseNeeded = set;
 }
 
+void RotaryKnob::releaseDone() {
+  releaseNeeded = false;
+}
+
 
 boolean RotaryKnob::isReleaseNeeded() {  
   if (setTimerPressKeyDuration != 0) {
@@ -54,6 +58,7 @@ boolean RotaryKnob::isReleaseNeeded() {
       }
   return releaseNeeded;
   }
+  else return false;
 }
 
 
