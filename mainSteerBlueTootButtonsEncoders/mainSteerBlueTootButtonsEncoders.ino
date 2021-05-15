@@ -1,6 +1,6 @@
 #include <BleGamepad.h>
 #include <BleConnectionStatus.h>
-#include "Button.h"
+#include "Buttons.h"
 #include "Rotary.h"
 #include "RotaryKnob.h"
 #include <driver/adc.h>
@@ -55,39 +55,25 @@ float percentCharged = 100;
 int read_raw;
 float voltage_value;
 
-
 //the init for the timerInterrupt
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 //inititialization knobs
-BleGamepad bleGamepad("Wheel BeastDJW", "BeastDJW", percentCharged);
-//flippers
-Button button1(BUTTON1);
-Button button2(BUTTON2);
-//leftabove buttons
-Button button3(ROTARYENCODER2BUTTON);
-Button button4(BUTTON4);
-Button button5(BUTTON5);
-Button button6(BUTTON6);
-//rightabove buttons
-Button button9(BUTTON9);
-Button button10(BUTTON10);
-Button button11(BUTTON11);
-Button button12(ROTARYENCODER1BUTTON);
-//lefunder buttons
-Button button15(BUTTON15);
-Button button16(BUTTON16);
-Button button17(BUTTON17);
-Button button18(ROTARYENCODER3BUTTON);
-//rightunder buttons
-Button button21(BUTTON21);
-Button button22(BUTTON22);
-Button button23(BUTTON23);
-//Button button24(ROTARYENCODER4BUTTON);
-Button buttons[] = {button1, button2, button3, button4, button5, button6, button9, button10, button11, button12, button15, button16, button17, button18, button21, button22, button23};
+BleGamepad bleGamepad("Wheel BeastDJW test", "BeastDJW", percentCharged);
+byte pins[] = {BUTTON1,BUTTON2,ROTARYENCODER2BUTTON,BUTTON4,BUTTON5,BUTTON6,BUTTON9,BUTTON10,BUTTON11,ROTARYENCODER1BUTTON,BUTTON15,BUTTON16,BUTTON17,ROTARYENCODER3BUTTON,BUTTON21,BUTTON22,BUTTON23};
+int numberOfButtons = sizeof pins / sizeof pins[0];
+
+//paddleshifters 1&2
+//leftabove buttons (ROTARYENCODER2BUTTON,BUTTON4,BUTTON5,BUTTON6)
+//rightabove buttons (BUTTON9,BUTTON10,BUTTON11,ROTARYENCODER1BUTTON)
+//lefunder buttons (BUTTON15,BUTTON16,BUTTON17,ROTARYENCODER3BUTTON)
+//rightunder buttons (BUTTON21,BUTTON22,BUTTON23)
+//Button button24(ROTARYENCODER4BUTTON), a short on gpio pins :-(
+//Button buttons[] = {button1, button2, button3, button4, button5, button6, button9, button10, button11, button12, button15, button16, button17, button18, button21, button22, button23};
 int bleButtons[] = {BUTTON_1, BUTTON_2, BUTTON_3, BUTTON_4, BUTTON_5, BUTTON_6, BUTTON_9, BUTTON_10, BUTTON_11, BUTTON_12, BUTTON_15, BUTTON_16, BUTTON_17, BUTTON_18, BUTTON_21, BUTTON_22, BUTTON_23};
-int numberOfButtons = *(&buttons + 1) - buttons;
+//int bleButtons[] = {BUTTON_1, BUTTON_2, BUTTON_3, BUTTON_4, BUTTON_5, BUTTON_6, BUTTON_9, BUTTON_10};
+
 
 RotaryKnob rotaryKnob1 = RotaryKnob(ROTARYENCODER1A, ROTARYENCODER1B, ROTARYENCODER_PRESSTIME);
 RotaryKnob rotaryKnob2 = RotaryKnob(ROTARYENCODER2A, ROTARYENCODER2B, ROTARYENCODER_PRESSTIME);
@@ -110,7 +96,7 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   Serial.println("Initializing...");
-  pinMode(ONBOARD_LED,OUTPUT);
+  pinMode(ONBOARD_LED,INPUT_PULLUP);
   //pinMode(GPIO_NUM_4,OUTPUT);
   pinMode(BATTERY_READ_VOLTAGE_PIN,INPUT);
   
@@ -131,6 +117,9 @@ void setup() {
   timerAlarmWrite(timer, 60000000, true);           
   timerAlarmEnable(timer);
 
+  // initialize (static) all buttons without the 2 encoders data signals 
+  Buttons.begin(pins, numberOfButtons);
+
   //the ISRs for the rotaryencoders
   #ifdef ROTARYENCODER1A
   attachInterrupt(ROTARYENCODER1A, rotaryKnobISR, CHANGE);
@@ -143,10 +132,6 @@ void setup() {
   attachInterrupt(ROTARYENCODER4B, rotaryKnobISR, CHANGE);
   #endif
   
-  //the battery dac pin for measuring the voltage (percent battery)
- // adc2_config_channel_atten( ADC2_CHANNEL_7, ADC_ATTEN_DB_11 );
-
-  //start bluetooth
   batteryCheck();
   bleGamepad.begin(25, 0, false, false, false, false, false, false, false, false, false, false, false, false, false);
 }
@@ -157,42 +142,27 @@ void setup() {
 void loop() {
   
   if(bleGamepad.isConnected()) {
-    digitalWrite(ONBOARD_LED,HIGH);
+    //digitalWrite(ONBOARD_LED,HIGH);
     scanButtons();
     scanRotaryEncoders();
   }     
   else {
-    digitalWrite(ONBOARD_LED                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ,LOW);
+    //digitalWrite(ONBOARD_LED,LOW);
   }
   oneMinuteProcedure(); 
 }
 /************************** E N D  L O O P ***********************************************/
 
-
-
 void scanButtons() {
   for(int i=0; i<numberOfButtons; i++) {
-    if (buttons[i].isPressed()) {    
+    if (Buttons.clicked(i)) {    
       standbyCounter = 0;                           //reset the standbyCounter
-      if (!buttons[i].pressHasBeenSent) {    
-        int64_t beforeSendingtime = esp_timer_get_time();
-        bleGamepad.press(bleButtons[i]);
-        int64_t totalSendingTime = esp_timer_get_time() - beforeSendingtime;
-       // Serial.printf("%"PRIu64"\n", totalSendingTime);
-        //Serial.printf("Sending Time press: % \n", beforeSendingtime - esp_timer_get_time());PriUint64<DEC>(x)
-        buttons[i].pressHasBeenSent = true;
-        buttons[i].releaseHasBeenSent = false;       
-      }
+      bleGamepad.press(bleButtons[i]);
+      Buttons.clearChangeFlag(i);
     }
-    else {
-      if (!buttons[i].releaseHasBeenSent) {
-      int64_t beforeSendingtime = esp_timer_get_time();
-        bleGamepad.release(bleButtons[i]);
-        int64_t totalSendingTime = esp_timer_get_time() - beforeSendingtime;
-      //  Serial.printf("%"PRIu64"\n", totalSendingTime);
-        buttons[i].releaseHasBeenSent = true; 
-        buttons[i].pressHasBeenSent = false;
-      }
+    else if(Buttons.released(i)) {
+      bleGamepad.release(bleButtons[i]);
+      Buttons.clearChangeFlag(i);
     }
   }
 }
@@ -240,26 +210,8 @@ void oneMinuteProcedure() {
 }
 
 void batteryCheck() {
-//    esp_err_t r = adc2_get_raw( ADC2_CHANNEL_7, ADC_WIDTH_12Bit, &read_raw);
-//    Serial.printf("Raw input, battery: %d\n", read_raw);
-//    float voltage = float(read_raw)* 3.50f / 4096.0f * 2.0f;
-//    if (voltage < 2.7) {
-//      percentCharged = 0.0f;
-//    }
-//    else if (voltage > 3.85 ) {
-//      percentCharged = 100.0f;
-//    }
-//    else {
-//      percentCharged = ((voltage-2.7f)*100)/1.2f;
-//    }
-//    Serial.printf("Voltage battery: %.2f \n", voltage );
-//    Serial.printf("Percentage battery: %d\n", int(percentCharged));
-//    bleGamepad.setBatteryLevel(int(percentCharged));
-
     read_raw = analogRead(BATTERY_READ_VOLTAGE_PIN);
-  //  Serial.printf("read_raw = %d \n", read_raw);
     voltage_value = (read_raw * 3.3 * 2) / float(4095) + 0.2;
- //   Serial.printf("Voltage = %f volt\n", voltage_value);
     if (voltage_value < 2.7) {
       percentCharged = 0.0f;
     }
@@ -270,7 +222,6 @@ void batteryCheck() {
       percentCharged = ((voltage_value-2.7f)*100)/1.3f;
     }
  //   Serial.printf("Percentage battery: %d\n", int(percentCharged));
- // eerst had ik hier 20, toen 30, nu 40
 //    if (int(percentCharged) < 40) {
 //      digitalWrite(BATTERY_LED,HIGH);
 //    } 
@@ -285,7 +236,6 @@ void standbyModeCheck() {
   standbyCounter++;
   if (standbyCounter >= MINUTES_TO_STANDBY) {
      countTimerInterrupt = 0; //is this necessary?
-     //digitalWrite(ONBOARD_LED,LOW);
      esp_deep_sleep_start();
   }
 }
