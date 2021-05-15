@@ -72,7 +72,7 @@ boolean ButtonsClass::begin(const byte* const buttonPins, byte numberOfButtons)
   _numberOfButtons = numberOfButtons;
   _buttonPins = new byte[numberOfButtons];
   _buttonStatus = new Button[numberOfButtons];
-
+ 
   //Make sure that the memory was successfully allocated.
   if (!_buttonPins || !_buttonStatus) {
     return false;
@@ -117,7 +117,7 @@ void ButtonsClass::end()
   _begun = false;
 }
 
-void IRAM_ATTR ButtonsClass::button_ISR()
+void ButtonsClass::button_ISR()
 {
   for (byte i = 0; i < _numberOfButtons; i++) {
     const boolean readState = !digitalRead(_buttonPins[i]);

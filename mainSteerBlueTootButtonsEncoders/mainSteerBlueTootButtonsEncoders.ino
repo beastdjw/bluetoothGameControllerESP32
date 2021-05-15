@@ -8,8 +8,8 @@
  
 //pins, see https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 //GPIO34-39 can only be set as input mode and do not have software pullup or pulldown functions.
-#define ONBOARD_LED GPIO_NUM_2 //this one is used by rotaryencoder2button as well
-#define BATTERY_LED GPIO_NUM_4
+#define ONBOARD_LED GPIO_NUM_2 //this one is used by rotaryencoder2button as well 
+#define BATTERY_LED GPIO_NUM_4 
 //flippers
 #define BUTTON1 GPIO_NUM_32
 #define BUTTON2 GPIO_NUM_33
@@ -96,7 +96,13 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   Serial.println("Initializing...");
-  pinMode(ONBOARD_LED,INPUT_PULLUP);
+
+  // initialize (static) all buttons without the 2 encoders data signals 
+  delay(1000);
+  Buttons.begin(pins, numberOfButtons);
+  delay(1000);
+  
+  //pinMode(ONBOARD_LED,INPUT_PULLUP);
   //pinMode(GPIO_NUM_4,OUTPUT);
   pinMode(BATTERY_READ_VOLTAGE_PIN,INPUT);
   
@@ -117,9 +123,6 @@ void setup() {
   timerAlarmWrite(timer, 60000000, true);           
   timerAlarmEnable(timer);
 
-  // initialize (static) all buttons without the 2 encoders data signals 
-  Buttons.begin(pins, numberOfButtons);
-
   //the ISRs for the rotaryencoders
   #ifdef ROTARYENCODER1A
   attachInterrupt(ROTARYENCODER1A, rotaryKnobISR, CHANGE);
@@ -133,6 +136,7 @@ void setup() {
   #endif
   
   batteryCheck();
+  
   bleGamepad.begin(25, 0, false, false, false, false, false, false, false, false, false, false, false, false, false);
 }
 
