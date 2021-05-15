@@ -175,21 +175,14 @@ void scanButtons() {
     if (buttons[i].isPressed()) {    
       standbyCounter = 0;                           //reset the standbyCounter
       if (!buttons[i].pressHasBeenSent) {    
-        int64_t beforeSendingtime = esp_timer_get_time();
         bleGamepad.press(bleButtons[i]);
-        int64_t totalSendingTime = esp_timer_get_time() - beforeSendingtime;
-       // Serial.printf("%"PRIu64"\n", totalSendingTime);
-        //Serial.printf("Sending Time press: % \n", beforeSendingtime - esp_timer_get_time());PriUint64<DEC>(x)
         buttons[i].pressHasBeenSent = true;
         buttons[i].releaseHasBeenSent = false;       
       }
     }
     else {
       if (!buttons[i].releaseHasBeenSent) {
-      int64_t beforeSendingtime = esp_timer_get_time();
         bleGamepad.release(bleButtons[i]);
-        int64_t totalSendingTime = esp_timer_get_time() - beforeSendingtime;
-      //  Serial.printf("%"PRIu64"\n", totalSendingTime);
         buttons[i].releaseHasBeenSent = true; 
         buttons[i].pressHasBeenSent = false;
       }
@@ -240,26 +233,9 @@ void oneMinuteProcedure() {
 }
 
 void batteryCheck() {
-//    esp_err_t r = adc2_get_raw( ADC2_CHANNEL_7, ADC_WIDTH_12Bit, &read_raw);
-//    Serial.printf("Raw input, battery: %d\n", read_raw);
-//    float voltage = float(read_raw)* 3.50f / 4096.0f * 2.0f;
-//    if (voltage < 2.7) {
-//      percentCharged = 0.0f;
-//    }
-//    else if (voltage > 3.85 ) {
-//      percentCharged = 100.0f;
-//    }
-//    else {
-//      percentCharged = ((voltage-2.7f)*100)/1.2f;
-//    }
-//    Serial.printf("Voltage battery: %.2f \n", voltage );
-//    Serial.printf("Percentage battery: %d\n", int(percentCharged));
-//    bleGamepad.setBatteryLevel(int(percentCharged));
 
     read_raw = analogRead(BATTERY_READ_VOLTAGE_PIN);
-  //  Serial.printf("read_raw = %d \n", read_raw);
     voltage_value = (read_raw * 3.3 * 2) / float(4095) + 0.2;
- //   Serial.printf("Voltage = %f volt\n", voltage_value);
     if (voltage_value < 2.7) {
       percentCharged = 0.0f;
     }
@@ -269,14 +245,6 @@ void batteryCheck() {
     else {
       percentCharged = ((voltage_value-2.7f)*100)/1.3f;
     }
- //   Serial.printf("Percentage battery: %d\n", int(percentCharged));
- // eerst had ik hier 20, toen 30, nu 40
-//    if (int(percentCharged) < 40) {
-//      digitalWrite(BATTERY_LED,HIGH);
-//    } 
-//    else {
-//      digitalWrite(BATTERY_LED,LOW);
-//    }
     
     bleGamepad.setBatteryLevel(int(percentCharged));
 }
@@ -285,7 +253,6 @@ void standbyModeCheck() {
   standbyCounter++;
   if (standbyCounter >= MINUTES_TO_STANDBY) {
      countTimerInterrupt = 0; //is this necessary?
-     //digitalWrite(ONBOARD_LED,LOW);
      esp_deep_sleep_start();
   }
 }
