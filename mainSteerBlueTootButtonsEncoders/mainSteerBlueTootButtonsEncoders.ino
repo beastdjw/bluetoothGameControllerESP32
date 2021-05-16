@@ -6,7 +6,7 @@
 #include <driver/adc.h>
 #include <driver/gpio.h>
  
-//pins, see https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+//pins, see https://randomnerdtutorials.com/esp32-pinout-reference-gpios/ f
 //GPIO34-39 can only be set as input mode and do not have software pullup or pulldown functions.
 #define ONBOARD_LED GPIO_NUM_2 //this one is used by rotaryencoder2button as well
 #define BATTERY_LED GPIO_NUM_4
