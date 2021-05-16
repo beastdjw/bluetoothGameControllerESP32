@@ -40,7 +40,7 @@ byte Button::getButtonId() {
   return buttonId;
 }
 
-void Button::button_ISR() {
+void IRAM_ATTR Button::button_ISR() {
   if (esp_timer_get_time() > lastChangeTime + debounceDelay) {
     const boolean readState = !digitalRead(buttonId);
     if (readState != currentState) {
