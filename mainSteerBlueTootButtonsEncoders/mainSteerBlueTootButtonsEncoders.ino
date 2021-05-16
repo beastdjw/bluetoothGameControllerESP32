@@ -6,7 +6,7 @@
 #include <driver/adc.h>
 #include <driver/gpio.h>
  
-//pins, see https://randomnerdtutorials.com/esp32-pinout-reference-gpios/ f
+//pins, see https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 //GPIO34-39 can only be set as input mode and do not have software pullup or pulldown functions.
 #define ONBOARD_LED GPIO_NUM_2 //this one is used by rotaryencoder2button as well
 #define BATTERY_LED GPIO_NUM_4
@@ -131,6 +131,8 @@ void setup() {
   timerAlarmWrite(timer, 60000000, true);           
   timerAlarmEnable(timer);
 
+  attachInterrupt(digitalPinToInterrupt(buttons[0].getButtonId()), buttonsISR, CHANGE);
+
   //the ISRs for the rotaryencoders
   #ifdef ROTARYENCODER1A
   attachInterrupt(ROTARYENCODER1A, rotaryKnobISR, CHANGE);
@@ -162,7 +164,7 @@ void loop() {
     scanRotaryEncoders();
   }     
   else {
-    digitalWrite(ONBOARD_LED                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ,LOW);
+    digitalWrite(ONBOARD_LED,LOW);
   }
   oneMinuteProcedure(); 
 }
@@ -172,20 +174,12 @@ void loop() {
 
 void scanButtons() {
   for(int i=0; i<numberOfButtons; i++) {
-    if (buttons[i].isPressed()) {    
+    if (buttons[i].pushed()) {    
       standbyCounter = 0;                           //reset the standbyCounter
-      if (!buttons[i].pressHasBeenSent) {    
-        bleGamepad.press(bleButtons[i]);
-        buttons[i].pressHasBeenSent = true;
-        buttons[i].releaseHasBeenSent = false;       
-      }
+      bleGamepad.press(bleButtons[i]);
     }
-    else {
-      if (!buttons[i].releaseHasBeenSent) {
-        bleGamepad.release(bleButtons[i]);
-        buttons[i].releaseHasBeenSent = true; 
-        buttons[i].pressHasBeenSent = false;
-      }
+    else if (buttons[i].released()) {
+       bleGamepad.release(bleButtons[i]);
     }
   }
 }
@@ -212,6 +206,10 @@ void scanRotaryEncoders() {
           rotaryKnobs[i].setSendingPressButton(true);
       }
     }
+}
+
+void buttonsISR() {
+  buttons[0].button_ISR();
 }
 
 // rotate is called anytime the rotary inputs change state.

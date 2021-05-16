@@ -4,27 +4,38 @@
 #include <Arduino.h>
 
 class Button {
-  
-  private:
-    byte pin;
-    byte state;
-    byte lastReading;
-    unsigned long lastDebounceTime = 0;
-    unsigned long debounceDelay = 30;
-    int countPressed = 0;
- 
-    
   public:
-    Button(byte pin);
-
-    boolean pressHasBeenSent = false;
-    boolean releaseHasBeenSent = true;
+    //boolean begin(const byte* const buttonPins, byte numberOfButtons);
+    
+    Button(byte buttonId);
 
     void init();
-    void update();
+    //void update();
+    //byte getState();
 
-    byte getState();
-    bool isPressed();
+    bool changed();
+    bool pushed();
+    bool down();
+    bool up();
+    bool released();
+    void clearChangeFlag();
+    byte getButtonId();
+    void button_ISR();
+    
+  
+  private:
+    byte numberOfButtons();
+    byte buttonId;
+    boolean pressHasBeenSent = false;
+    boolean releaseHasBeenSent = true;
+    byte state;
+    bool currentState = false;
+    bool changeFlag = false;
+    byte lastReading;
+    unsigned long lastChangeTime = 0;
+    unsigned long debounceDelay = 30;
+    
+
 };
 
 #endif
