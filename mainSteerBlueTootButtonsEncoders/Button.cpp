@@ -21,6 +21,7 @@ bool Button::pushed() {
 }
 
 bool Button::released() {
+  
   return changed() && up(); 
 }
 
@@ -40,16 +41,30 @@ byte Button::getButtonId() {
   return buttonId;
 }
 
-void IRAM_ATTR Button::button_ISR() {
-  if (esp_timer_get_time() > lastChangeTime + debounceDelay) {
-    const boolean readState = !digitalRead(buttonId);
-    if (readState != currentState) {
+bool Button::getChangeFlag() {
+  return changeFlag;
+}
+
+void Button::setState(bool newState) {
+    state = newState;
+}
+
+void Button::button_ISR() { 
+  const bool readState = !digitalRead(buttonId);
+  if(readState != currentState) {
+    if(esp_timer_get_time() > lastChangeTime + debounceDelay) {
       currentState = readState;
       changeFlag = true;
-      lastChangeTime = esp_timer_get_time();
     }
+    lastChangeTime = esp_timer_get_time();
   }
-  
-  const bool readState = !digitalRead(buttonId);
-  
+//  if (esp_timer_get_time() > lastChangeTime + debounceDelay) {
+//    bool readState = !digitalRead(buttonId);
+//    if (readState != currentState) {
+//      currentState = readState;
+//      changeFlag = true;
+//      lastChangeTime = esp_timer_get_time();
+//    }
+//  }
+    
 }

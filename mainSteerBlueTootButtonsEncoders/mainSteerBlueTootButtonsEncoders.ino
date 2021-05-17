@@ -54,6 +54,7 @@ int standbyCounter = 0;
 float percentCharged = 100;
 int read_raw;
 float voltage_value;
+bool pushedSent = false;
 
 
 //the init for the timerInterrupt
@@ -100,7 +101,7 @@ int numberofRotaryKnobs = *(&rotaryKnobs + 1) - rotaryKnobs;
 // Code with critica section for the sleepmode (standby) timer
 void IRAM_ATTR onTime() {
   portENTER_CRITICAL_ISR(&timerMux);
-  countTimerInterrupt++;//
+  countTimerInterrupt++;
   portEXIT_CRITICAL_ISR(&timerMux);
 }
 
@@ -131,18 +132,34 @@ void setup() {
   timerAlarmWrite(timer, 60000000, true);           
   timerAlarmEnable(timer);
 
-  attachInterrupt(digitalPinToInterrupt(buttons[0].getButtonId()), buttonsISR, CHANGE);
+  attachInterrupt(buttons[0].getButtonId(), buttonsISR1, CHANGE);
+  attachInterrupt(buttons[1].getButtonId(), buttonsISR1, CHANGE);
+  attachInterrupt(buttons[2].getButtonId(), buttonsISR2, CHANGE);
+  attachInterrupt(buttons[3].getButtonId(), buttonsISR3, CHANGE);
+  attachInterrupt(buttons[4].getButtonId(), buttonsISR4, CHANGE);
+  attachInterrupt(buttons[5].getButtonId(), buttonsISR5, CHANGE);
+  attachInterrupt(buttons[6].getButtonId(), buttonsISR6, CHANGE);
+  attachInterrupt(buttons[7].getButtonId(), buttonsISR7, CHANGE);
+  attachInterrupt(buttons[8].getButtonId(), buttonsISR8, CHANGE);
+  attachInterrupt(buttons[9].getButtonId(), buttonsISR9, CHANGE);
+  attachInterrupt(buttons[10].getButtonId(), buttonsISR10, CHANGE);
+  attachInterrupt(buttons[11].getButtonId(), buttonsISR11, CHANGE);
+  attachInterrupt(buttons[12].getButtonId(), buttonsISR12, CHANGE);
+  attachInterrupt(buttons[13].getButtonId(), buttonsISR13, CHANGE);
+  attachInterrupt(buttons[14].getButtonId(), buttonsISR14, CHANGE);
+  attachInterrupt(buttons[15].getButtonId(), buttonsISR15, CHANGE);
+  attachInterrupt(buttons[16].getButtonId(), buttonsISR16, CHANGE);
 
   //the ISRs for the rotaryencoders
   #ifdef ROTARYENCODER1A
-  attachInterrupt(ROTARYENCODER1A, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER1B, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER2A, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER2B, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER3A, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER3B, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER4A, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER4B, rotaryKnobISR, CHANGE);
+  attachInterrupt(ROTARYENCODER1A, rotaryKnobISR1, CHANGE);
+  attachInterrupt(ROTARYENCODER1B, rotaryKnobISR1, CHANGE);
+  attachInterrupt(ROTARYENCODER2A, rotaryKnobISR2, CHANGE);
+  attachInterrupt(ROTARYENCODER2B, rotaryKnobISR2, CHANGE);
+  attachInterrupt(ROTARYENCODER3A, rotaryKnobISR3, CHANGE);
+  attachInterrupt(ROTARYENCODER3B, rotaryKnobISR3, CHANGE);
+  attachInterrupt(ROTARYENCODER4A, rotaryKnobISR4, CHANGE);
+  attachInterrupt(ROTARYENCODER4B, rotaryKnobISR4, CHANGE);
   #endif
   
   //the battery dac pin for measuring the voltage (percent battery)
@@ -174,14 +191,19 @@ void loop() {
 
 void scanButtons() {
   for(int i=0; i<numberOfButtons; i++) {
-    if (buttons[i].pushed()) {    
+    buttons[i].button_ISR();
+    if (buttons[i].pushed()) {
       standbyCounter = 0;                           //reset the standbyCounter
       bleGamepad.press(bleButtons[i]);
+      buttons[i].clearChangeFlag();
     }
-    else if (buttons[i].released()) {
-       bleGamepad.release(bleButtons[i]);
+    else {
+      if (buttons[i].released()) {
+        bleGamepad.release(bleButtons[i]);
+        buttons[i].clearChangeFlag();
+      }
     }
-  }
+  }   
 }
 
 void scanRotaryEncoders() {
@@ -208,15 +230,69 @@ void scanRotaryEncoders() {
     }
 }
 
-void buttonsISR() {
-  buttons[0].button_ISR();
+void buttonsISR0() {
+   buttons[0].button_ISR();
+}
+void buttonsISR1() {
+   buttons[1].button_ISR();
+}
+void buttonsISR2() {
+   buttons[2].button_ISR();
+}
+void buttonsISR3() {
+   buttons[3].button_ISR();
+}
+void buttonsISR4() {
+   buttons[4].button_ISR();
+}
+void buttonsISR5() {
+   buttons[5].button_ISR();
+}
+void buttonsISR6() {
+   buttons[6].button_ISR();
+}
+void buttonsISR7() {
+   buttons[7].button_ISR();
+}
+void buttonsISR8() {
+   buttons[8].button_ISR();
+}
+void buttonsISR9() {
+   buttons[9].button_ISR();
+}
+void buttonsISR10() {
+   buttons[10].button_ISR();
+}
+void buttonsISR11() {
+   buttons[11].button_ISR();
+}
+void buttonsISR12() {
+   buttons[12].button_ISR();
+}
+void buttonsISR13() {
+   buttons[13].button_ISR();
+}
+void buttonsISR14() {
+   buttons[14].button_ISR();
+}
+void buttonsISR15() {
+   buttons[15].button_ISR();
+}
+void buttonsISR16() {
+   buttons[16].button_ISR();
 }
 
 // rotate is called anytime the rotary inputs change state.
-void rotaryKnobISR() {
+void rotaryKnobISR1() {
     rotaryKnobs[0].ISR();
+}
+void rotaryKnobISR2() {
     rotaryKnobs[1].ISR();
+}
+void rotaryKnobISR3() {
     rotaryKnobs[2].ISR();
+}
+void rotaryKnobISR4() {
     rotaryKnobs[3].ISR();
 }
 
