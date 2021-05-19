@@ -214,18 +214,24 @@ void scanRotaryEncoders() {
             bleGamepad.release(bleRotaryKnobPins[i*2+1]);
             rotaryKnobs[i].setSendingPressButton(false);
             rotaryKnobs[i].releaseDone();
+              delay(50);
          }
       }
       else if (rotaryKnobs[i].changed()) {
           if (rotaryKnobs[i].isUp()) {
             rotaryKnobs[i].counter--;
             bleGamepad.press(bleRotaryKnobPins[i*2]);
+            delay(50);
+            //Serial.println("up");
           } 
           else {
             rotaryKnobs[i].counter++;
             bleGamepad.press(bleRotaryKnobPins[i*2+1]);
+            delay(50);
+            //Serial.println("down");
           }
           rotaryKnobs[i].setSendingPressButton(true);
+
       }
     }
 }

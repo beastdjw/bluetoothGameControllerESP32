@@ -26,7 +26,6 @@ class Button {
     
   
   private:
-    //portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
     byte numberOfButtons();
     byte buttonId;
     boolean pressHasBeenSent = false;
