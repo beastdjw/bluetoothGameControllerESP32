@@ -2,43 +2,69 @@
 
 //this class is assuming you use pullup resistance
 
-Button::Button(byte pin) {
-  this->pin = pin;
+Button::Button(byte buttonId) {
+  this->buttonId = buttonId;
   lastReading = HIGH;
   init();
 }
 
 void Button::init() {
-  pinMode(pin, INPUT_PULLUP);
-  update();
+  pinMode(buttonId, INPUT_PULLUP);
 }
 
-void Button::update() {
-    // You can handle the debounce of the button directly
-    // in the class, so you don't have to think about it
-    // elsewhere in your code
-    byte newReading = digitalRead(pin);
-    if (newReading != lastReading) {
-      lastDebounceTime = millis();
+bool Button::changed() {
+  return changeFlag;
+}
+
+bool Button::pushed() {
+  return changed() && down();
+}
+
+bool Button::released() {
+  
+  return changed() && up(); 
+}
+
+bool Button::down() {
+  return currentState;
+}
+
+bool Button::up() {
+  return !down();
+}
+
+void Button::clearChangeFlag() {
+  changeFlag = false;
+}
+
+byte Button::getButtonId() {
+  return buttonId;
+}
+
+bool Button::getChangeFlag() {
+  return changeFlag;
+}
+
+void Button::setState(bool newState) {
+    state = newState;
+}
+
+void Button::button_ISR() { 
+  const bool readState = !digitalRead(buttonId);
+  if(readState != currentState) {
+    if(esp_timer_get_time() > lastChangeTime + debounceDelay) {
+      currentState = readState;
+      changeFlag = true;
     }
-    if (state != lastReading) {
-      if (millis() - lastDebounceTime > debounceDelay) {
-        // Update the 'state' attribute only if debounce is checked
-        state = newReading;
-        if (!state) {
-          countPressed++;
-         // Serial.printf("button pressed: %d\n", countPressed);
-        }
-      }
-    } 
-    lastReading = newReading;
-}
-
-byte Button::getState() {
-  update();
-  return state;
-}
-
-bool Button::isPressed() {
-  return (getState() == LOW);
+    lastChangeTime = esp_timer_get_time();
+  }
+//  if (esp_timer_get_time() > lastChangeTime + debounceDelay) {
+//    bool readState = !digitalRead(buttonId);
+//    if (readState != currentState) {
+//      currentState = readState;
+//      changeFlag = true;
+//      lastChangeTime = esp_timer_get_time();
+//    }
+//  }
+    
 }

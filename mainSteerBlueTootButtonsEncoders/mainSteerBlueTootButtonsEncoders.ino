@@ -54,6 +54,7 @@ int standbyCounter = 0;
 float percentCharged = 100;
 int read_raw;
 float voltage_value;
+bool pushedSent = false;
 
 
 //the init for the timerInterrupt
@@ -100,7 +101,7 @@ int numberofRotaryKnobs = *(&rotaryKnobs + 1) - rotaryKnobs;
 // Code with critica section for the sleepmode (standby) timer
 void IRAM_ATTR onTime() {
   portENTER_CRITICAL_ISR(&timerMux);
-  countTimerInterrupt++;//
+  countTimerInterrupt++;
   portEXIT_CRITICAL_ISR(&timerMux);
 }
 
@@ -131,16 +132,34 @@ void setup() {
   timerAlarmWrite(timer, 60000000, true);           
   timerAlarmEnable(timer);
 
+  attachInterrupt(buttons[0].getButtonId(), buttonsISR1, CHANGE);
+  attachInterrupt(buttons[1].getButtonId(), buttonsISR1, CHANGE);
+  attachInterrupt(buttons[2].getButtonId(), buttonsISR2, CHANGE);
+  attachInterrupt(buttons[3].getButtonId(), buttonsISR3, CHANGE);
+  attachInterrupt(buttons[4].getButtonId(), buttonsISR4, CHANGE);
+  attachInterrupt(buttons[5].getButtonId(), buttonsISR5, CHANGE);
+  attachInterrupt(buttons[6].getButtonId(), buttonsISR6, CHANGE);
+  attachInterrupt(buttons[7].getButtonId(), buttonsISR7, CHANGE);
+  attachInterrupt(buttons[8].getButtonId(), buttonsISR8, CHANGE);
+  attachInterrupt(buttons[9].getButtonId(), buttonsISR9, CHANGE);
+  attachInterrupt(buttons[10].getButtonId(), buttonsISR10, CHANGE);
+  attachInterrupt(buttons[11].getButtonId(), buttonsISR11, CHANGE);
+  attachInterrupt(buttons[12].getButtonId(), buttonsISR12, CHANGE);
+  attachInterrupt(buttons[13].getButtonId(), buttonsISR13, CHANGE);
+  attachInterrupt(buttons[14].getButtonId(), buttonsISR14, CHANGE);
+  attachInterrupt(buttons[15].getButtonId(), buttonsISR15, CHANGE);
+  attachInterrupt(buttons[16].getButtonId(), buttonsISR16, CHANGE);
+
   //the ISRs for the rotaryencoders
   #ifdef ROTARYENCODER1A
-  attachInterrupt(ROTARYENCODER1A, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER1B, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER2A, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER2B, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER3A, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER3B, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER4A, rotaryKnobISR, CHANGE);
-  attachInterrupt(ROTARYENCODER4B, rotaryKnobISR, CHANGE);
+  attachInterrupt(ROTARYENCODER1A, rotaryKnobISR1, CHANGE);
+  attachInterrupt(ROTARYENCODER1B, rotaryKnobISR1, CHANGE);
+  attachInterrupt(ROTARYENCODER2A, rotaryKnobISR2, CHANGE);
+  attachInterrupt(ROTARYENCODER2B, rotaryKnobISR2, CHANGE);
+  attachInterrupt(ROTARYENCODER3A, rotaryKnobISR3, CHANGE);
+  attachInterrupt(ROTARYENCODER3B, rotaryKnobISR3, CHANGE);
+  attachInterrupt(ROTARYENCODER4A, rotaryKnobISR4, CHANGE);
+  attachInterrupt(ROTARYENCODER4B, rotaryKnobISR4, CHANGE);
   #endif
   
   //the battery dac pin for measuring the voltage (percent battery)
@@ -162,7 +181,7 @@ void loop() {
     scanRotaryEncoders();
   }     
   else {
-    digitalWrite(ONBOARD_LED                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ,LOW);
+    digitalWrite(ONBOARD_LED,LOW);
   }
   oneMinuteProcedure(); 
 }
@@ -172,29 +191,19 @@ void loop() {
 
 void scanButtons() {
   for(int i=0; i<numberOfButtons; i++) {
-    if (buttons[i].isPressed()) {    
+    buttons[i].button_ISR();
+    if (buttons[i].pushed()) {
       standbyCounter = 0;                           //reset the standbyCounter
-      if (!buttons[i].pressHasBeenSent) {    
-        int64_t beforeSendingtime = esp_timer_get_time();
-        bleGamepad.press(bleButtons[i]);
-        int64_t totalSendingTime = esp_timer_get_time() - beforeSendingtime;
-       // Serial.printf("%"PRIu64"\n", totalSendingTime);
-        //Serial.printf("Sending Time press: % \n", beforeSendingtime - esp_timer_get_time());PriUint64<DEC>(x)
-        buttons[i].pressHasBeenSent = true;
-        buttons[i].releaseHasBeenSent = false;       
-      }
+      bleGamepad.press(bleButtons[i]);
+      buttons[i].clearChangeFlag();
     }
     else {
-      if (!buttons[i].releaseHasBeenSent) {
-      int64_t beforeSendingtime = esp_timer_get_time();
+      if (buttons[i].released()) {
         bleGamepad.release(bleButtons[i]);
-        int64_t totalSendingTime = esp_timer_get_time() - beforeSendingtime;
-      //  Serial.printf("%"PRIu64"\n", totalSendingTime);
-        buttons[i].releaseHasBeenSent = true; 
-        buttons[i].pressHasBeenSent = false;
+        buttons[i].clearChangeFlag();
       }
     }
-  }
+  }   
 }
 
 void scanRotaryEncoders() {
@@ -205,27 +214,91 @@ void scanRotaryEncoders() {
             bleGamepad.release(bleRotaryKnobPins[i*2+1]);
             rotaryKnobs[i].setSendingPressButton(false);
             rotaryKnobs[i].releaseDone();
+              delay(50);
          }
       }
       else if (rotaryKnobs[i].changed()) {
           if (rotaryKnobs[i].isUp()) {
             rotaryKnobs[i].counter--;
             bleGamepad.press(bleRotaryKnobPins[i*2]);
+            delay(50);
+            //Serial.println("up");
           } 
           else {
             rotaryKnobs[i].counter++;
             bleGamepad.press(bleRotaryKnobPins[i*2+1]);
+            delay(50);
+            //Serial.println("down");
           }
           rotaryKnobs[i].setSendingPressButton(true);
+
       }
     }
 }
 
+void buttonsISR0() {
+   buttons[0].button_ISR();
+}
+void buttonsISR1() {
+   buttons[1].button_ISR();
+}
+void buttonsISR2() {
+   buttons[2].button_ISR();
+}
+void buttonsISR3() {
+   buttons[3].button_ISR();
+}
+void buttonsISR4() {
+   buttons[4].button_ISR();
+}
+void buttonsISR5() {
+   buttons[5].button_ISR();
+}
+void buttonsISR6() {
+   buttons[6].button_ISR();
+}
+void buttonsISR7() {
+   buttons[7].button_ISR();
+}
+void buttonsISR8() {
+   buttons[8].button_ISR();
+}
+void buttonsISR9() {
+   buttons[9].button_ISR();
+}
+void buttonsISR10() {
+   buttons[10].button_ISR();
+}
+void buttonsISR11() {
+   buttons[11].button_ISR();
+}
+void buttonsISR12() {
+   buttons[12].button_ISR();
+}
+void buttonsISR13() {
+   buttons[13].button_ISR();
+}
+void buttonsISR14() {
+   buttons[14].button_ISR();
+}
+void buttonsISR15() {
+   buttons[15].button_ISR();
+}
+void buttonsISR16() {
+   buttons[16].button_ISR();
+}
+
 // rotate is called anytime the rotary inputs change state.
-void rotaryKnobISR() {
+void rotaryKnobISR1() {
     rotaryKnobs[0].ISR();
+}
+void rotaryKnobISR2() {
     rotaryKnobs[1].ISR();
+}
+void rotaryKnobISR3() {
     rotaryKnobs[2].ISR();
+}
+void rotaryKnobISR4() {
     rotaryKnobs[3].ISR();
 }
 
@@ -240,26 +313,9 @@ void oneMinuteProcedure() {
 }
 
 void batteryCheck() {
-//    esp_err_t r = adc2_get_raw( ADC2_CHANNEL_7, ADC_WIDTH_12Bit, &read_raw);
-//    Serial.printf("Raw input, battery: %d\n", read_raw);
-//    float voltage = float(read_raw)* 3.50f / 4096.0f * 2.0f;
-//    if (voltage < 2.7) {
-//      percentCharged = 0.0f;
-//    }
-//    else if (voltage > 3.85 ) {
-//      percentCharged = 100.0f;
-//    }
-//    else {
-//      percentCharged = ((voltage-2.7f)*100)/1.2f;
-//    }
-//    Serial.printf("Voltage battery: %.2f \n", voltage );
-//    Serial.printf("Percentage battery: %d\n", int(percentCharged));
-//    bleGamepad.setBatteryLevel(int(percentCharged));
 
     read_raw = analogRead(BATTERY_READ_VOLTAGE_PIN);
-  //  Serial.printf("read_raw = %d \n", read_raw);
     voltage_value = (read_raw * 3.3 * 2) / float(4095) + 0.2;
- //   Serial.printf("Voltage = %f volt\n", voltage_value);
     if (voltage_value < 2.7) {
       percentCharged = 0.0f;
     }
@@ -269,14 +325,6 @@ void batteryCheck() {
     else {
       percentCharged = ((voltage_value-2.7f)*100)/1.3f;
     }
- //   Serial.printf("Percentage battery: %d\n", int(percentCharged));
- // eerst had ik hier 20, toen 30, nu 40
-//    if (int(percentCharged) < 40) {
-//      digitalWrite(BATTERY_LED,HIGH);
-//    } 
-//    else {
-//      digitalWrite(BATTERY_LED,LOW);
-//    }
     
     bleGamepad.setBatteryLevel(int(percentCharged));
 }
@@ -285,7 +333,6 @@ void standbyModeCheck() {
   standbyCounter++;
   if (standbyCounter >= MINUTES_TO_STANDBY) {
      countTimerInterrupt = 0; //is this necessary?
-     //digitalWrite(ONBOARD_LED,LOW);
      esp_deep_sleep_start();
   }
 }
